@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% set steps = [("inputs", "Files"), ("map", "Mapping"), ("sanity", "Sanity"),
+                ("configure", "Levers"), ("review", "Review"), ("run", "Run")] %}
+{% block body %}
+{% set keys = steps | map(attribute=0) | list %}
+{% set cur = keys.index(step) if step in keys else 0 %}
+{% set hrefs = {"inputs": "/inputs", "sanity": "/sanity",
+                "configure": "/configure", "review": "/review", "run": ""} %}
+<div class="shell with-rail">
+  <nav class="rail" aria-label="Run steps">
+    <div class="rail-title">New run</div>
+    {% for key, label in steps %}
+    {% if loop.index0 < cur and rid and key in hrefs %}
+    <a class="rail-step done" href="/runs/{{ rid }}{{ hrefs[key] }}">
+      <span class="rail-n">{{ loop.index }}</span>{{ label }}
+    </a>
+    {% else %}
+    <div class="rail-step {{ 'current' if loop.index0 == cur else '' }}"
+         {% if loop.index0 == cur %}aria-current="step"{% endif %}>
+      <span class="rail-n">{{ loop.index }}</span>{{ label }}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </nav>
+  <main class="content">{% block main %}{% endblock %}</main>
+</div>
+{% endblock %}

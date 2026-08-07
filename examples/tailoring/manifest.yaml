@@ -1,0 +1,17 @@
+soh_asof: '2026-07-15'
+roles:
+  master:
+    path: store-master.xlsx
+    profile: mappings/master.yaml
+  soh:
+    path: soh.xlsx
+    profile: mappings/soh.yaml
+  ros:
+  - path: velocity.xlsx
+    profile: mappings/ros.yaml
+  norms:
+    path: norms.xlsx
+    profile: mappings/norms.yaml
+  tiers:
+    path: tiers.csv
+    profile: mappings/tiers.yaml

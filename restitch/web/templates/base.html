@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}restitch{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="wordmark" href="/">restitch</a>
+  {% if rid %}<span class="crumb">·&nbsp;{{ rid }}</span>{% endif %}
+  <nav class="topbar-right"><a href="/compare">compare runs</a></nav>
+</header>
+{% block body %}
+<div class="shell"><main class="content">{% block main %}{% endblock %}</main></div>
+{% endblock %}
+</body>
+</html>

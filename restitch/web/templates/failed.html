@@ -1,0 +1,24 @@
+{% extends "flow.html" %}
+{% set step = "run" %}
+{% block main %}
+<div class="titleband">
+  <h1>Run failed</h1>
+  <div class="sub">the pipeline refused — by design, loudly, before any workbook was written</div>
+</div>
+
+<div class="callout bad"><b>{{ status.error or "The run did not finish." }}</b></div>
+
+<p class="prose">An assertion here is the proof chain doing its job: an
+invariant, check, or verification found something it could not prove, and no
+workbook exists that has silently failed one. The full traceback:</p>
+
+<pre class="log">{{ log or "no log captured" }}</pre>
+
+<div class="actions">
+  <a class="btn secondary" href="/runs/{{ rid }}/configure">Adjust levers</a>
+  <a class="btn secondary" href="/runs/{{ rid }}/inputs">Replace inputs</a>
+  <form method="post" action="/runs/{{ rid }}/execute" style="display:inline">
+    <button class="secondary" type="submit">Run again</button>
+  </form>
+</div>
+{% endblock %}

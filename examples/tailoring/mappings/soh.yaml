@@ -1,0 +1,29 @@
+role: soh
+name: demo-soh
+sheet: SOH
+header_row: 0
+columns:
+  division: Division
+  location: Store Code
+  category: Category
+  size: Size
+  style: Style Code
+  qty: Qty
+  mrp: MRP
+  value: Value
+  season: Season
+  dept: Department
+semantics:
+  mrp_extended: true
+  category_values:
+    Jacket:
+    - JACKET
+    Trouser:
+    - TROUSER
+  size_normalizer: numeric_zfill3
+  sheets:
+  - name: SOH
+    divisions_in:
+    - MW
+  exclusion_labels:
+    channel: liquidation-channel store

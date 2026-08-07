@@ -1,0 +1,51 @@
+{% extends "flow.html" %}
+{% set step = "inputs" %}
+{% block main %}
+<div class="titleband">
+  <h1>Files</h1>
+  <div class="sub">raw exports in, one mapping profile per role · nothing is trusted until sanity</div>
+</div>
+
+{% if error %}<div class="callout bad"><b>Blocked.</b> {{ error }}</div>{% endif %}
+
+{% if origin and origin.kind == "rerun" %}
+<div class="callout info"><b>Rerun of {{ origin.src }}.</b> The mapping
+profiles, the policy preset and any lever overrides carried over — upload only
+the fresh raw exports and set the new stock date. Upload a profile or policy
+below only to replace the carried one.</div>
+{% else %}
+<div class="callout info"><b>How this works.</b> Each role takes the raw export
+exactly as your system produced it, plus the mapping profile that names its
+columns. Profiles are written once per category and reused every run. Missing
+optional roles degrade loudly, never silently: no velocity means every holding
+plans as NO-DATA; no tiers means no report bands.</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+  {% for role, title, required, many, note in slots %}
+  <h2>{{ title }} <span class="mute small">{{ role }}{% if not required %} · optional{% endif %}</span></h2>
+  <div class="field-note">{{ note }}</div>
+  <label for="{{ role }}">Raw file</label>
+  <input type="file" id="{{ role }}" name="{{ role }}" {% if required %}required{% endif %}>
+  <label for="{{ role }}_profile">Mapping profile (YAML){% if role in have_profiles %}
+    <span class="mute" style="font-weight:400">— carried from {{ origin.src if origin else "this run" }}; leave empty to reuse</span>{% endif %}</label>
+  <input type="file" id="{{ role }}_profile" name="{{ role }}_profile">
+  {% endfor %}
+
+  <h2>policy <span class="mute small">the category preset</span></h2>
+  <div class="field-note">vocabulary + tenant facts + lever defaults; the levers step can override any lever without touching this file</div>
+  <label for="policy">Policy YAML{% if have_policy %}
+    <span class="mute" style="font-weight:400">— carried; leave empty to reuse</span>{% endif %}</label>
+  <input type="file" id="policy" name="policy" {% if not have_policy %}required{% endif %}>
+
+  <h2>Stock as-of date</h2>
+  <div class="field-note">drives the new-door cutoff, the current-season index and every display date; a preset pin always wins over derivation</div>
+  <label for="soh_asof">soh_asof</label>
+  <input type="date" id="soh_asof" name="soh_asof" required>
+
+  <div class="actions">
+    <button class="primary" type="submit">Load &amp; check inputs</button>
+    <span class="mute small">loads every file through the profiles; mapping only surfaces if something does not fit</span>
+  </div>
+</form>
+{% endblock %}

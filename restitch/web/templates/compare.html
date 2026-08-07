@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="titleband">
+  <h1>Compare runs</h1>
+  <div class="sub">duplicate-with-changed-levers, side by side — the only honest way to price a lever</div>
+</div>
+
+<form method="get" class="actions" style="margin-top:0">
+  <select name="a">{% for r in done %}<option value="{{ r.id }}" {% if r.id == a %}selected{% endif %}>{{ r.id }}</option>{% endfor %}</select>
+  <span class="mute">vs</span>
+  <select name="b">{% for r in done %}<option value="{{ r.id }}" {% if r.id == b %}selected{% endif %}>{{ r.id }}</option>{% endfor %}</select>
+  <button class="secondary" type="submit">Compare</button>
+</form>
+
+{% if rows %}
+
+{% if verdict == "identical" %}
+<div class="callout good"><b>Inputs identical.</b> All {{ n_files }} input
+files match by sha256 — the deltas below price the levers and nothing else.</div>
+{% elif verdict == "differ" %}
+<div class="callout bad"><b>Inputs differ — {{ diff_roles | join(", ") }}.</b>
+This comparison prices the inputs, not the levers; a lever's honest price
+needs a duplicate run on identical files.</div>
+{% elif verdict == "unknown" %}
+<div class="callout warn"><b>Input identity unknown.</b> One of the runs
+carries no provenance record, so file equality cannot be proven.</div>
+{% endif %}
+
+<table style="max-width:900px">
+  <thead><tr><th>Measure</th><th class="num">{{ a }}</th><th class="num">{{ b }}</th><th class="num">Δ (b − a)</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.label }}</td><td class="num">{{ r.a }}</td><td class="num">{{ r.b }}</td>
+      <td class="num {{ 'delta-good' if r.good > 0 else ('delta-bad' if r.good < 0 else '') }}">
+        {{ r.arrow }} {{ r.delta }} {{ r.unit }} · {{ r.word }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Lever diff</h2>
+{% if lever_diff %}
+<table style="max-width:900px">
+  <thead><tr><th>Lever</th><th>{{ a }}</th><th>{{ b }}</th></tr></thead>
+  <tbody>
+  {% for k, va, vb in lever_diff %}
+    <tr><td>{{ k }}</td><td class="mute">{{ va }}</td><td><b>{{ vb }}</b></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="mute">None — both runs resolved to the same policy.</p>
+{% endif %}
+
+<p class="mute small prose">A lever's price is the delta between a run and its
+duplicate with only that lever changed; comparing runs with different inputs
+compares the inputs, not the lever.</p>
+{% elif a or b %}
+<div class="callout warn"><b>Not comparable.</b> Both runs must be finished
+(state done) to compare their plans.</div>
+{% elif done | length < 2 %}
+<div class="callout info"><b>Two finished runs needed.</b> Duplicate a run with
+one lever changed and the delta table prices that lever.</div>
+{% endif %}
+{% endblock %}

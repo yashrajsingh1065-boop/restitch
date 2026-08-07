@@ -1,0 +1,29 @@
+role: soh
+name: demo-soh
+sheet: SOH
+header_row: 0
+columns:
+  division: Division
+  location: Store Code
+  category: Category
+  size: Size
+  style: Style Code
+  qty: Qty
+  mrp: MRP
+  value: Value
+  season: Season
+  dept: Department
+semantics:
+  mrp_extended: true
+  category_values:
+    Derby:
+    - DERBY
+    Loafer:
+    - LOAFER
+  size_normalizer: uk_shoe
+  sheets:
+  - name: SOH
+    divisions_in:
+    - MW
+  exclusion_labels:
+    channel: liquidation-channel store

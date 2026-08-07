@@ -1,0 +1,86 @@
+all_sizes:
+- '6'
+- '6.5'
+- '7'
+- '7.5'
+- '8'
+- '8.5'
+- '9'
+- '10'
+size_order:
+- '6'
+- '6.5'
+- '7'
+- '7.5'
+- '8'
+- '8.5'
+- '9'
+- '10'
+pivotals:
+- '7'
+- '8'
+- '9'
+secondary:
+- '6.5'
+- '7.5'
+- '8.5'
+wave2_pivotals:
+- '8'
+- '9'
+ext_lo_sizes:
+- '6'
+ext_hi_sizes:
+- '10'
+depth_fill: 1
+season_pattern: (Spring Summer|Autumn Winter)\s+(\d{4})
+season_spring_label: Spring Summer
+season_current_index: 0
+season_autumn_start_month: 7
+core_styles: []
+style_variant_suffixes:
+- Q
+afs_stores: []
+foco_frozen: []
+fs_warehouses: []
+city_aliases: {}
+franchise_models:
+- FOFO
+new_door_l2l:
+- New
+- ANN
+movement_budget: 1500
+budget_p2_extra: 300
+fill_floor: 0.8
+transit_floor: 0.75
+recv_peak_cap: 1.4
+cap_exempt_heals: true
+cap_exempt_wave2: true
+style_depth_cap: 12
+one_set_per_door_style: true
+ros_seller: 0.08
+min_recv_ros: 0.08
+ros_uplift: 1.2
+topup_depth_target: 2
+lo_spread: 8
+assembly_enabled: true
+asm_per_door: 1
+set_avoid_heal_dest: true
+max_rounds: 6
+protect_selling_fragments: true
+protect_fresh_season: true
+allow_partial_fill: false
+new_door_donor_freeze: true
+new_door_cutoff: null
+new_door_window_days: 365
+evac_no_norm: true
+fofo_net_flow: true
+fofo_transit_floor: 0.8
+localize_donors: true
+loc_tier_km:
+  city: 15.0
+  state: 400.0
+  region: 1000.0
+  far: 2000.0
+geo_mode: pan
+geo_city_set: []
+geo_max_km: 0.0

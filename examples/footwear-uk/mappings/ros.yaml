@@ -1,0 +1,20 @@
+role: ros
+name: demo-ros
+sheet: Velocity
+header_row: 0
+columns:
+  location: Store Code
+  style: Style Code
+  ros8: ROS 8W
+  sales8: Sales 8W
+  ros_life: ROS Life
+  str_life: STR
+  sales_life: Lifetime Sales
+  dept: Department
+  shelf_life: Shelf Life
+  nsv_life: Lifetime NSV
+  nsv8: NSV 8W
+  inwards: Inwards
+  grn8: GRN 8W
+semantics:
+  kind: base

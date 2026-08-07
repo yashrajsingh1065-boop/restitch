@@ -1,0 +1,23 @@
+role: master
+name: demo-master
+sheet: Stores
+header_row: 1
+columns:
+  id: Store Code
+  name: Store Name
+  city: City
+  state: State
+  region: Region
+  lat: Latitude
+  lon: Longitude
+  model: Store Model
+  opened: Opened On
+  l2l: L2L Tag
+  status: Store Status
+  grade: Grade
+  store_type: Store Type
+  format: Format
+semantics:
+  blocked_when_nonempty:
+  - Block Reason
+  channel_exclude_name_contains: LIQUIDATION

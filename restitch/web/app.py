@@ -13,7 +13,13 @@ from pathlib import Path
 
 import yaml
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import UploadFile
@@ -107,6 +113,24 @@ def create_app(runs_root: Path) -> FastAPI:
     def create_run():
         rid = runner.new_run(runs_root)
         return _goto(rid, "inputs")
+
+    @app.get("/policy-template.yaml")
+    def policy_template(vocab: str = "tailoring"):
+        """A starting preset, generated from the Policy dataclass itself so the
+        handed-out file can never drift from what from_dict accepts."""
+        from ..core.policy import to_dict
+        from ..synth import VOCABS, demo_policy
+        if vocab not in VOCABS:
+            return PlainTextResponse(
+                f"unknown vocab {vocab!r}; one of: {', '.join(sorted(VOCABS))}",
+                status_code=404)
+        head = (f"# restitch policy preset — {vocab} starting template.\n"
+                "# Edit the size vocabulary for your category; budgets here are\n"
+                "# sized to the demo network. Every field is documented in\n"
+                "# restitch/core/policy.py; unknown keys are rejected by name.\n")
+        body = head + yaml.safe_dump(to_dict(demo_policy(vocab)), sort_keys=False)
+        return Response(body, media_type="text/yaml", headers={
+            "Content-Disposition": f'attachment; filename="policy-{vocab}.yaml"'})
 
     @app.post("/runs/{rid}/discard")
     def discard(rid: str):

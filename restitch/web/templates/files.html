@@ -33,7 +33,10 @@ plans as NO-DATA; no tiers means no report bands.</div>
   {% endfor %}
 
   <h2>policy <span class="mute small">the category preset</span></h2>
-  <div class="field-note">vocabulary + tenant facts + lever defaults; the levers step can override any lever without touching this file</div>
+  <div class="field-note">vocabulary + tenant facts + lever defaults; the levers step can
+    override any lever without touching this file · starting template:
+    <a href="/policy-template.yaml">tailoring</a> ·
+    <a href="/policy-template.yaml?vocab=footwear-uk">footwear-uk</a></div>
   <label for="policy">Policy YAML{% if have_policy %}
     <span class="mute" style="font-weight:400">— carried; leave empty to reuse</span>{% endif %}</label>
   <input type="file" id="policy" name="policy" {% if not have_policy %}required{% endif %}>

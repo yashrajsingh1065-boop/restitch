@@ -437,6 +437,27 @@ def test_failed_run_surfaces_the_assertion_not_a_dead_server():
     assert page.status_code == 200 and "Run failed" in page.text
 
 
+def test_policy_template_downloads_and_loads():
+    """The files page's starting-template link must hand out a file that
+    ACTUALLY loads — from_dict is the proof, not a schema comment."""
+    from restitch.core.policy import from_dict
+    client = _env()["client"]
+    for vocab in ("tailoring", "footwear-uk"):
+        r = client.get("/policy-template.yaml", params={"vocab": vocab})
+        assert r.status_code == 200
+        assert f"policy-{vocab}.yaml" in r.headers["content-disposition"]
+        pol = from_dict(yaml.safe_load(r.text))
+        assert len(pol.pivotals) >= 2
+    assert client.get("/policy-template.yaml").status_code == 200   # default vocab
+    assert client.get("/policy-template.yaml",
+                      params={"vocab": "nope"}).status_code == 404
+    # and the files page links it
+    stub = _new_run(client)
+    page = client.get(f"/runs/{stub}/inputs")
+    assert 'href="/policy-template.yaml"' in page.text
+    client.post(f"/runs/{stub}/discard")
+
+
 if __name__ == "__main__":
     import sys
     mod = sys.modules["__main__"]

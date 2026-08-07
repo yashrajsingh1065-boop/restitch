@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "restitch"
+version = "0.1.0"
+description = "Set-completion inventory redeployment: turn cut-size stock into full sets with a fully proven store-to-store transfer plan"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Yashraj Singh" }]
+keywords = [
+  "inventory", "retail", "redeployment", "size-sets", "optimization",
+  "allocation", "supply-chain",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Other Audience",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Office/Business",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "openpyxl>=3.1",
+  "pyyaml>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yashrajsingh1065-boop/restitch"
+Repository = "https://github.com/yashrajsingh1065-boop/restitch"
+Issues = "https://github.com/yashrajsingh1065-boop/restitch/issues"
+
+[project.optional-dependencies]
+xlsb = ["python-calamine>=0.2"]
+web = ["fastapi>=0.110", "uvicorn>=0.27", "jinja2>=3.1", "python-multipart>=0.0.9"]
+dev = ["pytest>=8.0", "ruff>=0.4", "httpx>=0.27"]
+
+[project.scripts]
+restitch = "restitch.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["restitch*"]
+
+[tool.setuptools.package-data]
+restitch = ["py.typed"]
+"restitch.web" = ["templates/*.html", "static/*.css"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 96
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

@@ -1,0 +1,51 @@
+{% extends "flow.html" %}
+{% set step = "run" %}
+{% block main %}
+<div class="titleband">
+  <h1>Running</h1>
+  <div class="sub">the same pipeline as the CLI: load → sanity → engine → render → verify · a plan that cannot prove itself is never rendered</div>
+</div>
+
+<div id="stages" aria-live="polite">
+{% for s in stages %}
+  <div class="stage-row pending" data-stage="{{ s }}">
+    <span class="st">waiting</span><span>{{ s }}</span>
+  </div>
+{% endfor %}
+</div>
+<p id="conn" class="mute small" hidden>lost contact with the server — retrying</p>
+
+<p class="mute small prose" style="margin-top:24px">The engine asserts its 29
+invariants before returning; the renderer refuses to save on any failed check;
+the verifier replays the saved file. If anything fails you will land on the
+failure page with the assertion text, not a spinner.</p>
+
+<script>
+const stages = document.querySelectorAll('.stage-row');
+const conn = document.getElementById('conn');
+async function poll() {
+  try {
+    const r = await fetch('/runs/{{ rid }}/status');
+    const st = await r.json();
+    conn.hidden = true;
+    if (st.state === 'done' || st.state === 'failed') { location.reload(); return; }
+    let reached = true;
+    stages.forEach(row => {
+      const name = row.dataset.stage;
+      if (st.stage === name) {
+        row.className = 'stage-row current'; row.querySelector('.st').textContent = 'running';
+        reached = false;
+      } else if (reached) {
+        row.className = 'stage-row done-st'; row.querySelector('.st').textContent = 'done';
+      } else {
+        row.className = 'stage-row pending'; row.querySelector('.st').textContent = 'waiting';
+      }
+    });
+  } catch (e) {
+    conn.hidden = false;      // one failed fetch must never end the loop
+  }
+  setTimeout(poll, 1500);
+}
+poll();
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "flow.html" %}
+{% set step = "run" %}
+{% block main %}
+<div class="titleband">
+  <h1>Run report</h1>
+  <div class="sub">{{ metrics.categories | join(" + ") }} · {{ "{:,}".format(metrics.lines) }} lines · plan identity = the canonical move list in plan.json</div>
+</div>
+
+<div class="provbar">
+  {% if prov.soh_asof %}<span>stock as-of <b>{{ prov.soh_asof }}</b></span>{% endif %}
+  <span>preset <b>{{ status.preset or "policy.yaml" }}</b></span>
+  <span><b>{{ fingerprints | length }}</b> inputs sha-stamped</span>
+  {% if prov.restitch_version %}<span>restitch {{ prov.restitch_version }}</span>{% endif %}
+  {% if status.origin %}<span>{{ status.origin.kind }} of
+    <a href="/runs/{{ status.origin.src }}">{{ status.origin.src }}</a></span>{% endif %}
+</div>
+
+<div class="callout {{ 'bad' if failures else 'good' }}">
+  <b>{{ "Proven." if not failures else "Failed checks present." }}</b>
+  Build battery: {{ checks.battery_summary }} · Independent verify:
+  {{ checks.verify_summary }} — the verifier replayed the SAVED workbook
+  against independently loaded inputs; a skipped row is a rule disabled by
+  policy, shown in place, never dropped.
+</div>
+
+{% if failures %}
+<h2>Failed checks — read these first</h2>
+{% for c in failures %}
+<details class="check" open>
+  <summary>
+    <span class="st fail">FAIL</span>
+    <span>{{ c.name }}</span>
+    <span class="mute small" style="margin-left:auto">{{ c.id }}</span>
+  </summary>
+  <div class="evidence">{{ c.detail }}</div>
+</details>
+{% endfor %}
+{% endif %}
+
+<div class="tiles">
+  <div class="tile"><div class="label">Units moved</div>
+    <div class="value">{{ "{:,.0f}".format(metrics.units) }}</div>
+    <div class="sub">{{ "{:,}".format(metrics.lines) }} lines</div></div>
+  <div class="tile"><div class="label">Cut % before</div>
+    <div class="value bad">{{ "%.1f%%" | format(metrics.cut_pct.before * 100) }}</div>
+    <div class="sub">of stock in size-broken sets</div></div>
+  <div class="tile"><div class="label">After P1</div>
+    <div class="value">{{ "%.1f%%" | format(metrics.cut_pct.p1 * 100) }}</div>
+    <div class="sub">funded plan</div></div>
+  <div class="tile"><div class="label">After full plan</div>
+    <div class="value good">{{ "%.1f%%" | format(metrics.cut_pct.full * 100) }}</div>
+    <div class="sub">everything runs</div></div>
+  <div class="tile"><div class="label">Shipping</div>
+    <div class="value">{{ "{:,.0f}".format(metrics.localization.km_after) }}</div>
+    <div class="sub">km after localization ({{ "{:,.0f}".format(metrics.localization.km_before) }} before)</div></div>
+  <div class="tile"><div class="label">Doors</div>
+    <div class="value">{{ "{:,}".format(metrics.stores_planned) }}</div>
+    <div class="sub">in the plan universe</div></div>
+</div>
+
+{% if scope_cost %}
+<div class="callout warn"><b>Geography priced.</b>
+  Scope '{{ scope_cost.mode }}' costs {{ "{:,.0f}".format(scope_cost.units_cost) }}
+  units and {{ scope_cost.sets_cost }} sets vs the open network
+  (cut {{ "%.1f%%" | format(scope_cost.cut_full * 100) }} scoped vs
+  {{ "%.1f%%" | format(scope_cost.cut_full_pan * 100) }} open). Priced by a
+  deterministic re-run with geography open; the
+  {{ scope_cost.geo_blocked_sets }} GEO-BLOCKED heals at close are a label,
+  not this number.</div>
+{% endif %}
+
+<div style="display:flex; align-items:baseline; gap:16px">
+  <h2 style="margin-bottom:0">Build battery — replayed from the produced rows</h2>
+  <button type="button" class="linklike" id="xall" data-open="0"
+          style="margin-left:auto" aria-label="expand every check's evidence">Expand all</button>
+</div>
+{% for s in sections %}
+<h2 class="small" style="margin:20px 0 4px; color: var(--slate)">{{ s.name }}
+  — {{ s.passed }}/{{ s.total }}{% if s.skipped %} · {{ s.skipped }} skipped{% endif %}</h2>
+{% for c in s["items"] %}
+<details class="check">
+  <summary>
+    <span class="st {{ 'skipped' if c.skipped else ('pass' if c.passed else ('amber' if c.warn else 'fail')) }}">
+      {{ "SKIPPED" if c.skipped else ("PASS" if c.passed else ("AMBER" if c.warn else "FAIL")) }}</span>
+    <span>{{ c.name }}</span>
+    <span class="mute small" style="margin-left:auto">{{ c.id }}</span>
+  </summary>
+  <div class="evidence">{{ c.detail }}</div>
+</details>
+{% endfor %}
+{% endfor %}
+
+<h2>Independent verify — the saved file, replayed
+  — {{ vsec.passed }}/{{ vsec.total }}{% if vsec.skipped %} · {{ vsec.skipped }} skipped{% endif %}</h2>
+{% for c in vsec["items"] %}
+<details class="check">
+  <summary>
+    <span class="st {{ 'skipped' if c.skipped else ('pass' if c.passed else 'fail') }}">
+      {{ "SKIPPED" if c.skipped else ("PASS" if c.passed else "FAIL") }}</span>
+    <span>{{ c.name }}</span>
+    <span class="mute small" style="margin-left:auto">{{ c.id }}</span>
+  </summary>
+  <div class="evidence">{{ c.detail }}</div>
+</details>
+{% endfor %}
+
+<script>
+const xall = document.getElementById('xall');
+xall.addEventListener('click', () => {
+  const open = xall.dataset.open === '1';
+  document.querySelectorAll('details.check').forEach(d => { d.open = !open; });
+  xall.dataset.open = open ? '0' : '1';
+  xall.textContent = open ? 'Expand all' : 'Collapse all';
+});
+</script>
+
+{% if ambers %}
+<h2>Sanity findings carried into this run</h2>
+{% for f in ambers %}
+<div class="callout {{ 'bad' if f.level == 'red' else 'warn' }}">
+  <b>{{ f.level | upper }} · {{ f.id }}.</b> {{ f.title }}</div>
+{% endfor %}
+{% endif %}
+
+{% if prov_notes %}
+<h2>Degradation notes</h2>
+{% for n in prov_notes %}<div class="callout warn"><b>note.</b> {{ n }}</div>{% endfor %}
+{% endif %}
+
+{% if diff %}
+<h2>Levers changed from preset</h2>
+<table>
+  <thead><tr><th>Lever</th><th>Preset</th><th>This run</th></tr></thead>
+  <tbody>
+  {% for k, was, now in diff %}
+    <tr><td>{{ k }}</td><td class="mute">{{ was }}</td><td><b>{{ now }}</b></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if fingerprints %}
+<h2>Input fingerprints</h2>
+<table style="max-width:820px">
+  <thead><tr><th>Role</th><th>File</th><th>sha256 (first 16)</th><th class="num">Bytes</th></tr></thead>
+  <tbody>
+  {% for role, name, sha, size in fingerprints %}
+    <tr><td>{{ role }}</td><td>{{ name }}</td><td class="mute">{{ sha }}</td>
+        <td class="num">{{ "{:,}".format(size) }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2>Deliverables</h2>
+<div class="actions" style="margin-top:8px">
+  <a class="btn primary" href="/runs/{{ rid }}/download">Download movement.xlsx</a>
+  <a class="btn secondary" href="/runs/{{ rid }}/download?file=plan.json">plan.json</a>
+  <a class="btn secondary" href="/runs/{{ rid }}/download?file=provenance.json">provenance.json</a>
+  <a class="btn secondary" href="/runs/{{ rid }}/download?file=checks.json">checks.json</a>
+</div>
+
+<h2>Next run</h2>
+<div class="actions" style="margin-top:8px">
+  <form method="post" action="/runs/{{ rid }}/rerun">
+    <button class="secondary" type="submit">Rerun with fresh files</button>
+  </form>
+  <form method="post" action="/runs/{{ rid }}/duplicate">
+    <button class="secondary" type="submit">Duplicate with changed levers</button>
+  </form>
+  <span class="mute small">rerun keeps profiles, policy and levers; duplicate keeps the inputs
+  too and opens at levers — compare then prices exactly what changed</span>
+</div>
+<p class="mute small prose">Reproduce: <code>restitch run --manifest {{ manifest }}</code>
+· re-verify any time with <code>restitch verify &lt;rundir&gt;/out</code>-style
+drift detection; the input hashes are in provenance.json.</p>
+{% endblock %}

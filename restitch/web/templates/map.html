@@ -1,0 +1,74 @@
+{% extends "flow.html" %}
+{% set step = "map" %}
+{% block main %}
+<div class="titleband">
+  <h1>Mapping — {{ role }}</h1>
+  <div class="sub">the profile did not fit this file; fix the mapping, nothing loads until it does</div>
+</div>
+
+{% if error %}<div class="callout bad"><b>Load failed.</b> {{ error }}</div>{% endif %}
+
+<div class="callout warn"><b>Suggestions are hypotheses.</b> The headers below
+come from the file itself (sheet {{ sheet }}, suggested header row
+{{ suggested_header_row }}). Nearest-match hints are never auto-accepted; a
+wrong mapping loads cleanly and produces a confidently wrong plan, which is
+why this page exists.</div>
+
+<h2>What the file looks like</h2>
+<table>
+  <thead><tr><th>Header</th><th>Sample values</th></tr></thead>
+  <tbody>
+  {% for h, samples in headers.items() %}
+    <tr><td>{{ h }}</td><td class="mute">{{ samples | join(" | ") }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if sheets | length > 1 %}
+<form method="get" class="actions" style="margin:8px 0 0">
+  <label for="sheet-pick" style="margin:0">Sheet</label>
+  <select id="sheet-pick" name="sheet" style="max-width:220px">
+    {% for s in sheets %}<option value="{{ s }}" {% if s == sheet %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="secondary" type="submit">Show its headers</button>
+</form>
+{% endif %}
+
+<h2>Map the columns</h2>
+<p class="mute small prose">Pick the file's own header for each canonical
+field the role knows. Leave a field unmapped only if the loader treats it as
+optional — a missing required field fails loudly on retry, by design.</p>
+<form method="post">
+  <input type="hidden" name="sheet" value="{{ sheet }}">
+  <label for="header_row">Header row (0-based{% if suggested_header_row is not none %}; suggested {{ suggested_header_row }}{% endif %})</label>
+  <input type="text" id="header_row" name="header_row" inputmode="numeric"
+         value="{{ header_row }}" style="max-width:90px">
+  {% for f in fields %}
+  {% set cur = columns.get(f) %}
+  <label for="col_{{ f }}">{{ f }}</label>
+  <select id="col_{{ f }}" name="col_{{ f }}">
+    <option value="">— not mapped —</option>
+    {% if cur and cur not in headers %}
+    <option value="{{ cur }}" selected>{{ cur }} (not in file)</option>
+    {% endif %}
+    {% for h in headers %}
+    <option value="{{ h }}" {% if h == cur %}selected{% endif %}>{{ h }}</option>
+    {% endfor %}
+  </select>
+  {% endfor %}
+  <div class="actions">
+    <button class="primary" type="submit">Save &amp; retry load</button>
+    <a class="btn secondary" href="/runs/{{ rid }}/inputs">Back to files</a>
+  </div>
+</form>
+
+<details style="margin-top:28px">
+  <summary class="mute small" style="cursor:pointer">Advanced — edit the full
+  profile YAML (geometry, value maps, filters, money-column semantics)</summary>
+  <form method="post" style="margin-top:10px">
+    <textarea class="code" name="profile_yaml" rows="22">{{ profile_yaml }}</textarea>
+    <div class="actions">
+      <button class="secondary" type="submit">Save YAML &amp; retry load</button>
+    </div>
+  </form>
+</details>
+{% endblock %}

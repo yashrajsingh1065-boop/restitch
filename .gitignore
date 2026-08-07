@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+out/
+*.xlsx
+*.xlsb
+*.csv
+runs/
+restitch-demo/
+.claude/
+.DS_Store

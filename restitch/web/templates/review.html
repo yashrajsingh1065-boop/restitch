@@ -1,0 +1,51 @@
+{% extends "flow.html" %}
+{% set step = "review" %}
+{% block main %}
+<div class="titleband">
+  <h1>Review</h1>
+  <div class="sub">the resolved configuration and the exact inputs it will run on — this page IS the run's contract</div>
+</div>
+
+<h2>Lever changes vs preset</h2>
+{% if diff %}
+<table>
+  <thead><tr><th>Lever</th><th>Preset</th><th>This run</th></tr></thead>
+  <tbody>
+  {% for k, was, now in diff %}
+    <tr><td>{{ k }}</td><td class="mute">{{ was }}</td><td><b>{{ now }}</b></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="mute">None — the preset runs unchanged.</p>
+{% endif %}
+
+{% if allow_red %}
+<div class="callout bad"><b>RED findings overruled.</b> This run proceeds
+against blocking sanity findings; the overrule and the findings are part of
+the run record.</div>
+{% endif %}
+
+{% if notes %}
+<h2>Degradation notes</h2>
+{% for n in notes %}<div class="callout warn"><b>note.</b> {{ n }}</div>{% endfor %}
+{% endif %}
+
+<h2>Input fingerprints</h2>
+<table>
+  <thead><tr><th>File</th><th>sha256 (first 16)</th></tr></thead>
+  <tbody>
+  {% for name, h in hashes %}
+    <tr><td>{{ name }}</td><td class="mute">{{ h }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="mute small prose">Reproducing this run later is
+<code>restitch run --manifest &lt;rundir&gt;/manifest.yaml</code>; the verify
+command will refuse if any input has changed since.</p>
+
+<form method="post" action="/runs/{{ rid }}/execute" class="actions">
+  <button class="primary" type="submit">Run the engine</button>
+  <a class="btn secondary" href="/runs/{{ rid }}/configure">Back to levers</a>
+</form>
+{% endblock %}

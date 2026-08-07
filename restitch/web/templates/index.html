@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="titleband">
+  <h1>Runs</h1>
+  <div class="sub">every run is a self-contained provenance bundle; rerun = same profiles, fresh files</div>
+</div>
+
+<form method="post" action="/runs" class="actions" style="margin-top:0">
+  <button class="primary" type="submit">New run</button>
+  {% if done | length >= 2 %}
+  <span class="mute small">or compare two finished runs below</span>
+  {% endif %}
+</form>
+
+{% if not runs %}
+<div class="callout info"><b>No runs yet.</b> A run takes your raw exports
+(stock, master, norms, velocity), maps them once per category, reviews the
+input sanity, prices your levers, and produces the checked movement workbook.
+Start with <b>New run</b>; try the bundled synthetic category via
+<code>restitch demo</code> if you just want to see one.</div>
+{% else %}
+{% for r in runs %}
+<div class="run-row">
+  <a href="/runs/{{ r.id }}">{{ r.id }}</a>
+  <span class="state {{ r.state }}">{{ r.state }}</span>
+  <span class="mute small">
+    {% if r.created %}{{ r.created[:10] }} · {% endif %}
+    {% if r.preset %}{{ r.preset }} · {% endif %}
+    {% if r.metrics %}
+      {{ "{:,.0f}".format(r.metrics.units) }} u · {{ "{:,}".format(r.metrics.lines) }} lines ·
+      cut {{ "%.1f%%" | format(r.metrics.cut_pct.before * 100) }} →
+      {{ "%.1f%%" | format(r.metrics.cut_pct.full * 100) }} ·
+      {{ r.metrics.categories | join(" + ") }}
+      {% if r.metrics.geo and r.metrics.geo.mode != "pan" %} · geo: {{ r.metrics.geo.mode }}{% endif %}
+      {% if r.headline and r.headline.checks %} · {{ r.headline.checks }}{% endif %}
+    {% elif r.state == "failed" %}{{ r.error }}
+    {% elif r.headline %}{{ r.headline.checks }}
+    {% else %}mid-flow — never executed{% endif %}
+  </span>
+  <span class="small run-actions">
+    {% if r.state in ("files", "sanity", "configure", "review") %}
+    <form method="post" action="/runs/{{ r.id }}/discard">
+      <button class="danger-link" type="submit" title="remove this never-executed run">discard</button>
+    </form>
+    {% endif %}
+    {% if r.state == "done" %}<a href="/runs/{{ r.id }}/download">workbook</a>{% endif %}
+    {% if r.state in ("done", "failed") %}
+    <form method="post" action="/runs/{{ r.id }}/rerun">
+      <button class="linklike" type="submit" title="same profiles and levers, fresh raw files">rerun</button>
+    </form>
+    {% endif %}
+    {% if r.state == "done" %}
+    <form method="post" action="/runs/{{ r.id }}/duplicate">
+      <button class="linklike" type="submit" title="same inputs, opens at levers — compare prices the change">duplicate</button>
+    </form>
+    {% endif %}
+  </span>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if done | length >= 2 %}
+<h2>Compare</h2>
+<form method="get" action="/compare" class="actions" style="margin-top:8px">
+  <select name="a">{% for r in done %}<option value="{{ r.id }}">{{ r.id }}</option>{% endfor %}</select>
+  <span class="mute">vs</span>
+  <select name="b">{% for r in done %}<option value="{{ r.id }}" {% if loop.index == 2 %}selected{% endif %}>{{ r.id }}</option>{% endfor %}</select>
+  <button class="secondary" type="submit">Compare</button>
+</form>
+{% endif %}
+{% endblock %}

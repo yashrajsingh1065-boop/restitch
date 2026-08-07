@@ -1,0 +1,60 @@
+{% extends "flow.html" %}
+{% set step = "configure" %}
+{% block main %}
+<div class="titleband">
+  <h1>Levers</h1>
+  <div class="sub">every lever shows its value, its preset default, and what changing it cost when it was measured</div>
+</div>
+
+{% if error %}<div class="callout bad"><b>Rejected.</b> {{ error }}</div>{% endif %}
+
+<div class="callout info"><b>Leave a field empty to keep the preset.</b> Only
+changed levers land in overrides.yaml; the review step shows the exact diff.
+Vocabulary (ladders, pivotals) and tenant facts (frozen lists) live in the
+preset, not here: they are category truth, not run-time preference.</div>
+
+<form method="post">
+{% for group, levers in groups %}
+  <h2>{{ group }}</h2>
+  {% for field, kind, label, note in levers %}
+  {% set preset = base.get(field) %}
+  {% set shownv = shown.get(field, '') %}
+  <div class="lever">
+    <div class="name">
+      {% if field in over %}<span class="dot" title="changed from preset"></span>{% endif %}
+      <label for="lv-{{ field }}" style="display:inline; margin:0; font-size:inherit">{{ label }}</label>
+      <div class="preset">preset: {{ preset if preset is not none else "engine default" }}</div>
+    </div>
+    <div>
+      {% if kind == "bool" %}
+        <select id="lv-{{ field }}" name="{{ field }}">
+          <option value="" {% if shownv == "" %}selected{% endif %}>preset ({{ "on" if preset else "off" }})</option>
+          <option value="1" {% if shownv == "1" %}selected{% endif %}>on</option>
+          <option value="0" {% if shownv == "0" %}selected{% endif %}>off</option>
+        </select>
+      {% elif kind == "geo" %}
+        <select id="lv-{{ field }}" name="{{ field }}">
+          <option value="" {% if shownv == "" %}selected{% endif %}>preset ({{ preset or "pan" }})</option>
+          {% for mode, help in geo_help.items() %}
+          <option value="{{ mode }}" {% if shownv == mode %}selected{% endif %}>{{ mode }} — {{ help }}</option>
+          {% endfor %}
+        </select>
+      {% elif kind == "csv" %}
+        <input type="text" id="lv-{{ field }}" name="{{ field }}"
+               placeholder="{{ (preset or []) | join(', ') }}" value="{{ shownv }}">
+      {% else %}
+        <input type="text" inputmode="decimal" id="lv-{{ field }}" name="{{ field }}"
+               placeholder="{{ preset }}" value="{{ shownv }}">
+      {% endif %}
+      {% if errors.get(field) %}<div class="field-error" role="alert">{{ errors[field] }}</div>{% endif %}
+    </div>
+    <div class="note">{{ note }}</div>
+  </div>
+  {% endfor %}
+{% endfor %}
+  <div class="actions">
+    <button class="primary" type="submit">Validate &amp; review</button>
+    <span class="mute small">invalid combinations are rejected here with the reason, before anything persists</span>
+  </div>
+</form>
+{% endblock %}

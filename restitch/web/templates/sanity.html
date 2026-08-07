@@ -1,0 +1,48 @@
+{% extends "flow.html" %}
+{% set step = "sanity" %}
+{% block main %}
+<div class="titleband">
+  <h1>Input sanity</h1>
+  <div class="sub">the checks prove internal consistency; this page asks whether the inputs look like what they claim to be</div>
+</div>
+
+{% if error %}<div class="callout bad"><b>Hold on.</b> {{ error }}</div>{% endif %}
+
+{% if not by.red and not by.amber and not by.info %}
+<div class="callout good"><b>Clean.</b> No findings; the inputs look like what
+they claim to be.</div>
+{% endif %}
+
+{% for f in by.red %}
+<div class="callout bad"><b>RED · {{ f.id }}.</b> {{ f.title }}
+{% if f.detail %}<div class="small" style="margin-top:6px; white-space:pre-line">{{ f.detail }}</div>{% endif %}</div>
+{% endfor %}
+{% for f in by.amber %}
+<div class="callout warn"><b>AMBER · {{ f.id }}.</b> {{ f.title }}
+{% if f.detail %}<div class="small" style="margin-top:6px; white-space:pre-line">{{ f.detail }}</div>{% endif %}</div>
+{% endfor %}
+{% for f in by.info %}
+<div class="callout info"><b>info · {{ f.id }}.</b> {{ f.title }}
+{% if f.detail %}<div class="small" style="margin-top:6px; white-space:pre-line">{{ f.detail }}</div>{% endif %}</div>
+{% endfor %}
+
+<form method="post">
+  {% if by.amber %}
+  <label style="display:flex; gap:8px; align-items:baseline; font-weight:400; max-width:72ch">
+    <input type="checkbox" name="ack" value="1" style="width:auto">
+    <span>I have read the amber findings. They travel into the run record
+    either way; acknowledging them does not make them true or false.</span>
+  </label>
+  {% endif %}
+  {% if by.red %}
+  <label for="overrule">RED findings block the run. Type <b>OVERRULE</b> to proceed against them</label>
+  <input type="text" id="overrule" name="overrule" autocomplete="off">
+  <div class="field-note">the overrule is recorded in the run's provenance, with your findings attached</div>
+  {% endif %}
+  <div class="actions">
+    <button class="{{ 'overrule' if by.red else 'primary' }}" type="submit">
+      {{ "Proceed against RED findings" if by.red else "Proceed to levers" }}
+    </button>
+  </div>
+</form>
+{% endblock %}

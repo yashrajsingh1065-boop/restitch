@@ -1,0 +1,6 @@
+role: tiers
+name: demo-tiers
+header_row: 0
+columns:
+  location: Store Code
+  tier: Tier

@@ -1,0 +1,16 @@
+role: norms
+name: demo-norms
+sheet: Norms
+header_row: 0
+columns:
+  location: Store Code
+  brand_scope: Brand
+  category: Category
+  qty: Norm Qty
+semantics:
+  brand_scope_value: DEMO
+  category_values:
+    Derby:
+    - DERBY
+    Loafer:
+    - LOAFER
